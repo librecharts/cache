@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  fastapi:
+  cache:
     container_name: cache
     restart: unless-stopped
     build:
