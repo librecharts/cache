@@ -32,7 +32,11 @@ async def index(url: str) -> FileResponse:
         file_path = CHARTS_DIRECTORY + '/' + filename
 
         async def __do_update_from_internet() -> None:
-            async with httpx.AsyncClient() as client:
+
+            ssl_context = httpx.create_ssl_context()
+            ssl_context.options |= 0x4
+
+            async with httpx.AsyncClient(verify=ssl_context) as client:
                 response = await client.get(url, headers={'User-Agent': 'LibreCharts Proxy Service'})
                 if 'application/pdf' not in response.headers.get('content-type') or response.status_code != 200:
                     raise HTTPException(status_code=response.status_code, detail='Failed fetching a valid PDF file')
