@@ -23,7 +23,7 @@ if not os.path.exists(CHARTS_DIRECTORY):
 cached_files: list[str] = os.listdir(CHARTS_DIRECTORY)
 
 
-@cache.get("/{url:path}")
+@cache.get("/chart/{url:path}")
 async def index(url: str) -> FileResponse:
     if not url.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Not a valid PDF file provided")
