@@ -53,3 +53,8 @@ async def index(url: str) -> FileResponse:
                 'content-type': 'application/pdf'
             }
         )
+
+
+@cache.get('/health')
+async def health() -> dict:
+    return {'healthy': True}
