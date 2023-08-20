@@ -14,3 +14,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    volumes:
+      - charts:/app/charts
+
+volumes:
+  charts:
