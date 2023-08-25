@@ -25,38 +25,44 @@ cached_files: list[str] = os.listdir(CHARTS_DIRECTORY)
 
 @cache.get("/chart/{url:path}")
 async def index(url: str) -> FileResponse:
-    if not url.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Not a valid PDF file provided")
-    else:
-        filename = url.split('/')[-1]
-        file_path = CHARTS_DIRECTORY + '/' + filename
+    filename = url.split('/')[-1]
+    file_path = CHARTS_DIRECTORY + '/' + filename
 
-        async def __do_update_from_internet() -> None:
+    async def __do_update_from_internet() -> None:
 
-            ssl_context = httpx.create_ssl_context()
-            ssl_context.options |= 0x4
+        ssl_context = httpx.create_ssl_context()
+        ssl_context.options |= 0x4
 
-            async with httpx.AsyncClient(verify=ssl_context) as client:
-                response = await client.get(url, headers={'User-Agent': 'LibreCharts Proxy Service'})
-                if 'application/pdf' not in response.headers.get('content-type') or response.status_code != 200:
-                    raise HTTPException(status_code=response.status_code, detail='Failed fetching a valid PDF file')
-
-                with open(file_path, 'wb') as chart_file:
-                    chart_file.write(response.content)
-
-                cached_files.append(filename)
-
-        if filename not in cached_files:
-            await __do_update_from_internet()
-        elif datetime.now() - datetime.fromtimestamp(os.path.getctime(file_path)) > timedelta(days=1):
-            await __do_update_from_internet()
-
-        return FileResponse(
-            path=file_path,
-            headers={
-                'content-type': 'application/pdf'
+        async with httpx.AsyncClient(verify=ssl_context) as client:
+            headers: dict[str, str] = {
+                'User-Agent': 'LibreCharts Proxy Service'
             }
-        )
+
+            cookies: dict[str, str] = {}
+
+            if url.startswith('https://www.aip.net.nz/'):
+                cookies['disclaimer'] = '1'
+
+            response = await client.get(url, headers=headers, cookies=cookies)
+            if 'application/pdf' not in response.headers.get('content-type') or response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail='Failed fetching a valid PDF file')
+
+            with open(file_path, 'wb') as chart_file:
+                chart_file.write(response.content)
+
+            cached_files.append(filename)
+
+    if filename not in cached_files:
+        await __do_update_from_internet()
+    elif datetime.now() - datetime.fromtimestamp(os.path.getctime(file_path)) > timedelta(days=1):
+        await __do_update_from_internet()
+
+    return FileResponse(
+        path=file_path,
+        headers={
+            'content-type': 'application/pdf'
+        }
+    )
 
 
 @cache.get('/health')
