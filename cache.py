@@ -43,7 +43,7 @@ async def index(url: str) -> FileResponse:
             if url.startswith('https://www.aip.net.nz/'):
                 cookies['disclaimer'] = '1'
             try:
-                response = await client.get(url, headers=headers, cookies=cookies)
+                response = await client.get(url, headers=headers, cookies=cookies, timeout=15.0)
             except httpx.ConnectTimeout:
                 raise HTTPException(status_code=408, detail='Timed out fetching PDF file')
             if 'application/pdf' not in response.headers.get('content-type') or response.status_code != 200:
