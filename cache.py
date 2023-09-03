@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, HTTPException
+import ssl
+from fastapi import FastAPI, HTTPException, Request
 import httpx
 from datetime import datetime, timedelta
 from starlette.middleware.cors import CORSMiddleware
@@ -44,8 +45,9 @@ async def index(url: str) -> FileResponse:
                 cookies['disclaimer'] = '1'
             try:
                 response = await client.get(url, headers=headers, cookies=cookies, timeout=15.0)
-            except httpx.ConnectTimeout:
-                raise HTTPException(status_code=408, detail='Timed out fetching PDF file')
+            except ssl.SSLCertVerificationError:
+                async with httpx.AsyncClient(verify=False) as non_verify_client:
+                    response = await non_verify_client.get(url, headers=headers, cookies=cookies, timeout=15.0)
             if 'application/pdf' not in response.headers.get('content-type') or response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail='Failed fetching a valid PDF file')
 
@@ -65,6 +67,11 @@ async def index(url: str) -> FileResponse:
             'content-type': 'application/pdf'
         }
     )
+
+
+@cache.exception_handler(httpx.ConnectTimeout)
+async def unicorn_exception_handler(request: Request, exc: httpx.ConnectTimeout):
+    raise HTTPException(status_code=408, detail='Timed out fetching PDF file')
 
 
 @cache.get('/health')
