@@ -15,9 +15,14 @@ sentry_sdk.init(
 
 cache = FastAPI(docs_url=None, redoc_url=None)
 
+origins: list[str] = [
+    "https://librecharts.org",
+    "https://librecharts.com"
+]
+
 cache.add_middleware(
     CORSMiddleware,
-    allow_origins=["librecharts.org", "librecharts.com"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET"],
     allow_headers=["*"],
