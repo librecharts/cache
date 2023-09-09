@@ -10,7 +10,7 @@ cache = FastAPI(docs_url=None, redoc_url=None)
 
 cache.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["librecharts.org", "librecharts.com"],
     allow_credentials=True,
     allow_methods=["GET"],
     allow_headers=["*"],
@@ -67,6 +67,11 @@ async def index(url: str) -> FileResponse:
             'content-type': 'application/pdf'
         }
     )
+
+
+@cache.get("/status/health")
+async def health() -> dict[str, bool]:
+    return {"healthy": True}
 
 
 @cache.exception_handler(httpx.ConnectTimeout)

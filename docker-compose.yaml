@@ -12,10 +12,11 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    environment:
+      SENTRY_URI: ${SENTRY_URI}
     volumes:
       - charts:/app/charts
-    networks:
-      - "librecharts"
-
+    ports:
+      - "8000:8000"
 volumes:
   charts:
