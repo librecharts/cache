@@ -77,8 +77,3 @@ async def health() -> dict[str, bool]:
 @cache.exception_handler(httpx.ConnectTimeout)
 async def unicorn_exception_handler(request: Request, exc: httpx.ConnectTimeout):
     raise HTTPException(status_code=408, detail='Timed out fetching PDF file')
-
-
-@cache.get('/health')
-async def health() -> dict:
-    return {'healthy': True}
