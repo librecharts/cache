@@ -8,14 +8,8 @@ from starlette.responses import FileResponse
 import sentry_sdk
 
 sentry_sdk.init(
-    dsn="https://38f59703e433bf2b2dbe2ad9c516d61b@o4505838096744448.ingest.sentry.io/4505851535425536",
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
+    dsn=os.getenv('SENTRY_URI'),
     traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
 )
 
